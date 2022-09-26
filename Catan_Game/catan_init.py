@@ -32,8 +32,9 @@ class Edge:
 
 class Tile:
     all = []
-    def __init__(self, id, resource) -> None:
+    def __init__(self, id, value, resource) -> None:
         self.id = id
+        self.value = value
         self.resource = resource
 
         Tile.all.append(self)
@@ -136,10 +137,12 @@ class Game:
         self.shuffled_id = self.id.copy()
         random.shuffle(self.shuffled_id, self.returnSeed)
         # Instantiate tiles
+        for i in range(self.shuffled_id):
+            Tile(self.shuffled_id,self.shuffled_values)
 
     def returnSeed(self):
         return self.seed
 
-    
+
 
 # %%
