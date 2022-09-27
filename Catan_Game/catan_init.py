@@ -126,19 +126,50 @@ class Game:
     def __init__(self, seed, player1nam="P1", player2name="P2", player3name="P3", player4name="P4") -> None:
         self.seed = seed
         self.values = [2,3,3,4,4,5,5,6,6,8,8,9,9,10,10,11,11,12]
+        self.resource = ["brick","brick","brick",
+                        "ore","ore","ore",
+                        "wool","wool","wool","wool",
+                        "grain","grain","grain","grain",
+                        "lumber","lumber","lumber","lumber"
+                        ]
         self.id = []
+        self.available_id = []
         for val in range(19):
             self.id.append(val+1)
+            self.available_id.append(val+1)
 
-        # shuffle values and ids
-        self.shuffled_values = self.values.copy()
-        random.shuffle(self.shuffled_values, self.returnSeed)
 
-        self.shuffled_id = self.id.copy()
-        random.shuffle(self.shuffled_id, self.returnSeed)
-        # Instantiate tiles
-        for i in range(self.shuffled_id):
-            Tile(self.shuffled_id,self.shuffled_values)
+        self.high_values = [6,6,8,8]
+        self.low_values = [2,3,3,4,4,5,5,9,9,10,10,11,11,12]
+        for high_val in self.high_values:
+            # get random choice of available id
+            random_id = random.choice(self.available_id)
+            random_resource = random.choice(self.resource)
+
+            # remove the random choice
+            self.resource.remove(random_resource)
+            self.id.remove(random_id)
+
+            # update available id using graph
+            self.available_id.remove(random_id)
+            for graph_val in self.tile_graph[random_id]:
+                if graph_val in self.available_id:
+                    self.available_id.remove(graph_val)
+            
+            # create Tile
+            Tile(random_id, high_val, random_resource)
+
+        for low_val in self.low_values:
+            random_id = random.choice(self.id)
+            random_resource = random.choice(self.resource)
+
+            # remove the random choice
+            self.resource.remove(random_resource)
+            self.id.remove(random_id)
+
+            Tile(random_id, low_val, random_resource)
+
+
 
     def returnSeed(self):
         return self.seed
@@ -146,3 +177,4 @@ class Game:
 
 
 # %%
+
