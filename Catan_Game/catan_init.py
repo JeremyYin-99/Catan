@@ -2,7 +2,6 @@
 import random
 
 class Node:
-    all = []
     def __init__(self, id, edge1, edge2, edge3=None) -> None:
         self.id = id
 
@@ -12,7 +11,6 @@ class Node:
 
         self.occupied = False
 
-        Node.all.append(self)
 
     def setOccupied(self):
         self.occupied = True
@@ -21,27 +19,22 @@ class Node:
         return self.occupied
 
 class Edge:
-    all = []
     def __init__(self) -> None:
         self.occupied = False
 
-        Edge.all.append(self)
 
     def getOccupied(self):
         return self.occupied
 
 class Tile:
-    all = []
     def __init__(self, id, value, resource) -> None:
         self.id = id
         self.value = value
         self.resource = resource
 
-        Tile.all.append(self)
 
 
 class Player:
-    all = []
     def __init__(self, name) -> None:
         self.name = name
 
@@ -62,44 +55,61 @@ class Player:
         self.largest_army = False
         self.longest_road = False
 
-        Player.all.append(self)
 
     def addResource(self, type, amount):
         self.resource[type] = self.resource[type] + amount
 
-    def buildRoad(self):
+    def buildRoad(self, game_check: False):
+        if game_check ==False:
+            print(f"A road is already built")
+            return -1
+
         if (self.resource["brick"] >= 1) and (self.resource["lumber"] >= 1):
             self.resource["brick"] = self.resource["brick"] - 1
             self.resource["lumber"] = self.resource["lumber"] - 1
+            print(f"{self.name} has built a road")
             return 1
         else:
-            print("Not enough resources to build road")
+            print(f"{self.name} does not enough resources to build a road")
             return -1
 
-    def buildSettlement(self):
+    def buildSettlement(self, game_check: False):
+        if game_check == False:
+            print(f"A settlement or city is already built")
+            return -1
+            
+
         if (self.resource["brick"] >= 1) and (self.resource["lumber"] >= 1) and (self.resource["wool"] >= 1) and (self.resource["grain"]):
             self.resource["brick"] = self.resource["brick"] - 1
             self.resource["lumber"] = self.resource["lumber"] - 1
             self.resource["wool"] = self.resource["wool"] - 1
             self.resource["grain"] = self.resource["grain"] - 1
+            print(f"{self.name} has built a settlement")
             return 1
         else:
-            print("Not enough resources to build settlement")
+            print(f"{self.name} does not enough resources to build a settlement")
             return -1
 
-    def buildCity(self):
+    def buildCity(self, game_check: False):
+        if game_check == False:
+            print(f"A settlement or city is already built")
+            return -1
+
         if (self.resource["grain"] >= 2) and (self.resource["ore"] >= 3):
             self.resource["grain"] = self.resource["grain"] - 2
             self.resource["ore"] = self.resource["ore"] - 3
+            print(f"{self.name} has built a city")
             return 1
         else:
-            print("Not enough resources to build city")
+            print(f"{self.name} does not enough resources to build a city")
             return -1
 
     
 
 
 class Game:
+    # store all game instances
+    all = []
     # Create graph when game is initialized
     tile_graph = {
         1:(2,4,5),
@@ -123,15 +133,21 @@ class Game:
         19:(15,16,18)
     }
 
-    def __init__(self, seed, player1nam="P1", player2name="P2", player3name="P3", player4name="P4") -> None:
-        self.seed = seed
+    def __init__(self, player1nam="P1", player2name="P2", player3name="P3", player4name="P4") -> None:
+        # place to put class instances related to this game instance
+        self.tile_all = []
+        self.node_all = []
+        self.edge_all = []
+        self.player_all = []
+
+        # work on initializing the Tiles
         self.values = [2,3,3,4,4,5,5,6,6,8,8,9,9,10,10,11,11,12]
         self.resource = ["brick","brick","brick",
                         "ore","ore","ore",
                         "wool","wool","wool","wool",
                         "grain","grain","grain","grain",
-                        "lumber","lumber","lumber","lumber"
-                        ]
+                        "lumber","lumber","lumber","lumber",
+                        "desert"]
         self.id = []
         self.available_id = []
         for val in range(19):
@@ -140,7 +156,8 @@ class Game:
 
 
         self.high_values = [6,6,8,8]
-        self.low_values = [2,3,3,4,4,5,5,9,9,10,10,11,11,12]
+        self.low_values = [3,3,4,4,5,5,9,9,10,10,11,11]
+        self.very_low_values = [2,12]
         for high_val in self.high_values:
             # get random choice of available id
             random_id = random.choice(self.available_id)
@@ -155,9 +172,29 @@ class Game:
             for graph_val in self.tile_graph[random_id]:
                 if graph_val in self.available_id:
                     self.available_id.remove(graph_val)
-            
+
             # create Tile
-            Tile(random_id, high_val, random_resource)
+            self.tile_all.append(Tile(random_id, high_val, random_resource))
+
+        self.available_id = self.id.copy()
+        
+        for very_low_val in self.very_low_values:
+            random_id = random.choice(self.available_id)
+            random_resource = random.choice(self.resource)
+
+            # remove the random choice
+            self.resource.remove(random_resource)
+            self.id.remove(random_id)
+
+            # update available id using graph
+            self.available_id.remove(random_id)
+            for graph_val in self.tile_graph[random_id]:
+                if graph_val in self.available_id:
+                    self.available_id.remove(graph_val)
+
+            # create Tile
+            self.tile_all.append(Tile(random_id, very_low_val, random_resource))
+
 
         for low_val in self.low_values:
             random_id = random.choice(self.id)
@@ -167,12 +204,17 @@ class Game:
             self.resource.remove(random_resource)
             self.id.remove(random_id)
 
-            Tile(random_id, low_val, random_resource)
+            self.tile_all.append(Tile(random_id, low_val, random_resource))
+        
+        # Work on initializing the Nodes (City/Settlement)
 
+        # Work on initailizing the Edges (Roads)
 
+        # Work on initalizing the Players
 
-    def returnSeed(self):
-        return self.seed
+        # Append instance of game to class variable
+        Game.all.append(self)
+
 
 
 
