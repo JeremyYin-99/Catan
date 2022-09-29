@@ -146,8 +146,8 @@ class Game:
                         "ore","ore","ore",
                         "wool","wool","wool","wool",
                         "grain","grain","grain","grain",
-                        "lumber","lumber","lumber","lumber",
-                        "desert"]
+                        "lumber","lumber","lumber","lumber"
+                        ]
         self.id = []
         self.available_id = []
         for val in range(19):
@@ -158,6 +158,8 @@ class Game:
         self.high_values = [6,6,8,8]
         self.low_values = [3,3,4,4,5,5,9,9,10,10,11,11]
         self.very_low_values = [2,12]
+
+        # add in 6 and 8
         for high_val in self.high_values:
             # get random choice of available id
             random_id = random.choice(self.available_id)
@@ -177,7 +179,8 @@ class Game:
             self.tile_all.append(Tile(random_id, high_val, random_resource))
 
         self.available_id = self.id.copy()
-        
+
+        # add in 2 and 12
         for very_low_val in self.very_low_values:
             random_id = random.choice(self.available_id)
             random_resource = random.choice(self.resource)
@@ -195,7 +198,7 @@ class Game:
             # create Tile
             self.tile_all.append(Tile(random_id, very_low_val, random_resource))
 
-
+        # add in everything else besides desert
         for low_val in self.low_values:
             random_id = random.choice(self.id)
             random_resource = random.choice(self.resource)
@@ -206,6 +209,9 @@ class Game:
 
             self.tile_all.append(Tile(random_id, low_val, random_resource))
         
+        # add the desert
+        self.tile_all.append(Tile(self.id[0],7,"desert"))
+
         # Work on initializing the Nodes (City/Settlement)
 
         # Work on initailizing the Edges (Roads)
