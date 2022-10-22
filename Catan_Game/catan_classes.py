@@ -442,6 +442,12 @@ class Player:
             pass
 
         return True
+
+    def privatePlayerState(self) -> list:
+        pass
+
+    def publicPlayerState(self) -> list:
+        pass
         
 class Board:
     # Create graphs needed for board layout
@@ -775,7 +781,7 @@ class Board:
                 self.node_all[node].assignPort(random_port)
 
 
-    def pack_id_to_dict(self, list_in:list):
+    def pack_id_to_dict(self, list_in:list) -> dict:
         out = {}
         for l in list_in:
             out[l.id] = l
@@ -783,7 +789,7 @@ class Board:
         return out
 
 
-    def boardState(self):
+    def boardState(self) -> list:
         to_return = []
         # Iterate over tile state
         for key in range(len(self.tile_all)):
@@ -850,12 +856,12 @@ class Game:
         Game.all.append(self)
 
 
-    def drawDevCard(self):
+    def drawDevCard(self) -> str:
         chosen_card = random.choice(self.dev_cards)
         self.dev_cards.remove(chosen_card)
         return chosen_card
 
-    def rollDice(self):
+    def rollDice(self) -> int:
         return randint(1,7)+randint(1,7)
 
     def distributeResources(self, roll):
@@ -863,10 +869,11 @@ class Game:
             if tile.value == roll:
                 tile.assignResources()
 
-    def moveRobber(self, tile_id, initial_player:Player, effected_player:Player):
+    def moveRobber(self, tile_id, initial_player:Player, effected_player:Player) -> bool:
         if initial_player == effected_player:
             print("You can not rob yourself")
             return False
+            
         list_of_players = []
         for node in self.board.tile_all[tile_id].nodes:
             if (node.player in list_of_players) == False:
