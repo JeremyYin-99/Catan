@@ -27,13 +27,8 @@ class Node:
     def __init__(self, id, node1=None, node2=None, node3=None, edge1=None, edge2=None, edge3=None) -> None:
         self.id = id
 
-        self.node1 = node1
-        self.node2 = node2
-        self.node3 = node3
-
-        self.edge1 = edge1
-        self.edge2 = edge2
-        self.edge3 = edge3
+        self.nodes = [node1, node2, node3]
+        self.edges = [edge1, edge2, edge3]
 
         self.occupied = False
         self.settlement_type = ""
@@ -120,37 +115,15 @@ class Node:
         return to_return
 
     def __str__(self) -> str:
-        if self.node3 == None:
-            if self.player == None:
-                to_return = 'ID: ' + str(self.id) + "\n" \
-                        + "Node 1 ID: " + str(self.node1.id) + " " + "Edge 1 ID: " + str(self.edge1.id) + "\n" \
-                        + "Node 2 ID: " + str(self.node2.id) + " " + "Edge 2 ID: " + str(self.edge2.id) +"\n" \
-                        + "Port: " + str(self.port) + "\n" \
-                        + 'Node occupation is: ' + str(self.occupied)
-            else:
-                to_return = 'ID: ' + str(self.id) + "\n" \
-                            + "Node 1 ID: " + str(self.node1.id) + " " + "Edge 1 ID: " + str(self.edge1.id) + "\n" \
-                            + "Node 2 ID: " + str(self.node2.id) + " " + "Edge 2 ID: " + str(self.edge2.id) +"\n" \
-                            + "Port: " + str(self.port) + "\n" \
-                            + 'Node occupation is: ' + str(self.occupied) \
-                            + " by " + str(self.player.disp_name)
-        else:
-            if self.player== None:
-                to_return = 'ID: ' + str(self.id) + "\n" \
-                        + "Node 1 ID: " + str(self.node1.id) + " " + "Edge 1 ID: " + str(self.edge1.id) + "\n" \
-                        + "Node 2 ID: " + str(self.node2.id) + " " + "Edge 2 ID: " + str(self.edge2.id) +"\n" \
-                        + "Node 3 ID: " + str(self.node3.id) + " " + "Edge 3 ID: " + str(self.edge3.id) +"\n" \
-                        + "Port: " + str(self.port) + "\n" \
-                        + 'Node occupation is: ' + str(self.occupied)
-            else:
-                to_return = 'ID: ' + str(self.id) + "\n" \
-                            + "Node 1 ID: " + str(self.node1.id) + " " + "Edge 1 ID: " + str(self.edge1.id) + "\n" \
-                            + "Node 2 ID: " + str(self.node2.id) + " " + "Edge 2 ID: " + str(self.edge2.id) +"\n" \
-                            + "Node 3 ID: " + str(self.node3.id) + " " + "Edge 3 ID: " + str(self.edge3.id) +"\n" \
-                            + "Port: " + str(self.port) + "\n" \
-                            + 'Node occupation is: ' + str(self.occupied) \
-                            + " by " + str(self.player.disp_name)
-
+        to_return = 'ID: {} \n'.format(str(self.id))
+        for i in range(3):
+            if self.nodes[i] == None or self.edges[i] == None:
+                break
+            to_return += "Node {} ID: {} Edge {} ID: {}\n".format(str(i+1), str(self.nodes[i].id), str(i+1), str(self.edges[i].id))
+        
+        to_return += "Port: {}\n".format(str(self.port)) \
+            + "Occupation statue: {}".format(str(self.occupied))
+            
         return to_return
 
 
@@ -170,10 +143,26 @@ class Edge:
         return True
 
     def edgeState(self):
+        to_return = [self.id]
+        
         if self.player == None:
-            return [0]
+            to_return.append(0)
+            return to_return
         else:
-            return [self.player.id]
+            to_return.append(self.player.id)
+            return to_return
+
+    def __str__(self) -> str:
+        to_return = ""
+        to_return += "ID: {}\n".format(str(self.id)) \
+            + "Occupation: {}\n".format(str(self.occupied))
+        if self.player == None:
+            to_return += "Player: None"
+        else:
+            to_return += "Player: {}".format(str(self.player.disp_name))
+
+        return to_return
+
 
 
 class Tile:
@@ -642,27 +631,13 @@ class Board:
             node_connections = self.node_graph[node.id]
             i = 0
             for element in node_connections:
-                if i == 0:
-                    node.node1 = self.node_all[element-1]
-                elif i == 1:
-                    node.node2 = self.node_all[element-1]
-                elif i == 2:
-                    node.node3 = self.node_all[element-1]
-                else:
-                    print("Issues have happened")
+                node.nodes[i] = self.node_all[element-1]
                 i = i+1
             
             edge_connections = self.node_edge_graph[node.id]
             i = 0
             for element in edge_connections:
-                if i == 0:
-                    node.edge1 = self.edge_all[element-1]
-                elif i == 1:
-                    node.edge2 = self.edge_all[element-1]
-                elif i == 2:
-                    node.edge3 = self.edge_all[element-1]
-                else:
-                    print("Issues have happened")
+                node.edges[i] = self.edge_all[element-1]
                 i = i+1
 
 
@@ -873,7 +848,7 @@ class Game:
         if initial_player == effected_player:
             print("You can not rob yourself")
             return False
-            
+
         list_of_players = []
         for node in self.board.tile_all[tile_id].nodes:
             if (node.player in list_of_players) == False:
